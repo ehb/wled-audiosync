@@ -1,0 +1,24 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  build-test:
+    name: build (native, aarch64) and selftest
+    runs-on: ubuntu-24.04
+    container: debian:12@sha256:268fb24c39bca92d326dd83ea3abebe4a3f7751c804ffef23bb6d857dd343ff8
+    permissions:
+      contents: read
+    env:
+      WERROR: -O2 -g -Wall -Wextra -Werror
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: sh ci/install_deps.sh
+      - name: Native build and selftest
+        run: make test CFLAGS="$WERROR" BUILD=build/native
+      - name: aarch64 build
+        run: make CC=aarch64-linux-gnu-gcc CFLAGS="$WERROR" BUILD=build/aarch64
